@@ -1,0 +1,72 @@
+\documentclass[12pt]{sbcconf}
+\usepackage[brazil]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage{geometry}
+\geometry{top=3cm,bottom=3cm,left=3cm,right=3cm}
+
+\title{Detecção de botnets IoT com a base N-BaIoT: algoritmos e hiperparâmetros}
+
+\author{Renato}
+\address{Programa de Pós-graduação em Engenharia Elétrica\\ Universidade de São Paulo}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+A aplicação praticada adota o conjunto N-BaIoT para detectar tráfego malicioso em dispositivos IoT heterogêneos. Este texto explora as escolhas de algoritmos e hiperparâmetros, justificando o uso de modelos ensemble (Random Forest e XGBoost) para lidar com o perfil multiclasse e as particularidades de cada dispositivo. Além disso, relaciona os parâmetros definidos com os mecanismos anti-overfitting requeridos por um experimento acadêmico de mestrado.
+\end{abstract}
+
+\section{Introdução}
+O N-BaIoT, utilizado nesta aplicação Streamlit, reúne amostras de tráfego capturado de oito dispositivos IoT reais sob diversos ataques de botnets (Mirai, Gafgyt etc.). Cada dispositivo possui comportamento de rede distinto, o que reforça a necessidade de modelos com alta capacidade discriminativa e tolerância a ruídos. O objetivo final é fornecer uma experiência interativa que permita carregar os dados por dispositivo, analisar classes disponíveis e treinar modelos que suportem detecção por dispositivo e de maneira agregada. Consequentemente, a escolha do(s) algoritmo(s) e o ajuste cuidadoso dos hiperparâmetros são cruciais para garantir resultados confiáveis e reprodutíveis.
+
+\section{Escolha dos algoritmos}
+\label{sec:algoritmos}
+O projeto adota dois algoritmos do estado da arte em classificação de tráfego: \textbf{Random Forest} e \textbf{XGBoost}. Ambos são baseados em árvores de decisão e se destacam pela robustez contra dados ruidosos, capacidade de capturar relações não lineares e interpretabilidade parcial (importâncias de atributos), além de possuir mecanismos internos de regularização.
+
+\subsection{Random Forest}
+Random Forest cria uma floresta de árvores bootstrapadas com subamostras de atributos. Por ser um ensemble bagging, reduz a variância, o que é desejável diante das diferenças comportamentais entre dispositivos e ataques. A natureza paralelizável do treinamento também facilita o tempo de desenvolvimento e re-treinamento por dispositivo, característica recorrente nos sistemas descritos por Mirsky et al. (2021), utilizados como referência.
+
+\subsection{XGBoost}
+XGBoost agrega árvores de forma sequencial (boosting), corrigindo erros residuais. A regularização explícita (penalidades L1/L2) e os controles de profundidade ajudam a evitar o overfitting observado quando se treina com poucos exemplos de determinadas classes. A biblioteca é otimizada para velocidade e pode aproveitar o balanceamento de dados por dispositivo (cada modelo é treinado com o conjunto específico de um dispositivo ou com o conjunto agregado, de acordo com a configuração), respondendo bem à estratégia experimental proposta pelo paper do N-BaIoT.
+
+\section{Ajuste de hiperparâmetros e justificativas}
+\label{sec:hiperparametros}
+Os hiperparâmetros foram definidos considerando dois pilares: estabilidade estatística (para evitar 100\% de acurácia artificial) e estabilidade computacional (tempo aceitável para uso em interface interativa). Os valores padrão podem ser refinados via sliders no Streamlit, mas os valores base apoiam-se em experimentos típicos com N-BaIoT. A tabela~\ref{tab:hiperparametros} sumariza os ajustes principais.
+
+\begin{table}[h]
+\centering
+\caption{Hiperparâmetros definidos e suas justificativas básicas.}
+\label{tab:hiperparametros}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Parâmetro & Valor padrão & Justificativa \\
+\midrule
+\texttt{n\_estimators} (RF) & 150 & Suficiente para estabilizar votações sem exagerar o tempo de treino. \\
+\texttt{max\_depth} (RF) & 15 & Limita profundidade para prevenir memorizar padrões específicos do device. \\
+\texttt{min\_samples\_split} (RF) & 3 & Evita divisões triviais em folhas com poucos exemplos. \\
+\texttt{min\_samples\_leaf} (RF) & 2 & Garante representatividade mínima por folha. \\
+\texttt{n\_estimators} (XGB) & 120 & Balanceia altura do ensemble e tempo de treino. \\
+\texttt{max\_depth} (XGB) & 8 & Controla capacidade para captar interações sem explodir o overfit. \\
+\texttt{learning\_rate} (XGB) & 0.1 & Passo moderado para evitar saltos agressivos nos resíduos. \\
+\texttt{subsample}, \texttt{colsample\_bytree} & 0.8 & Introduz aleatorização que mitiga correlações fortes entre features. \\
+\texttt{scale\_pos\_weight} (XGB) & autom. (com base em balanceamento) & Corrige classes minoritárias quando treinando por dispositivo. \\
+\texttt{test\_size} geral & 0.2 (ajustável) & Mantém folga para validação, respeitando restrições de amostras pequenas. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+As escolhas acima atendem aos requisitos do curso: existem controles visuais no Streamlit que permitem alterar cada valor listado, dando ao usuário controlo direto sobre a capacidade do modelo. A combinação de \texttt{max\_depth} moderado e \texttt{min\_samples\_leaf} garante que árvores não aprendam ruído específico de um ataque raro, enquanto o \texttt{learning\_rate} reduz o impacto de erros do boosting iterativo. O parâmetro \texttt{scale\_pos\_weight} é recalculado conforme a proporção de classes no treino por dispositivo, evitando que classes extremamente minoritárias dominem o gradiente.
+
+\section{Conclusão}
+O uso conjunto de Random Forest e XGBoost oferece uma suíte equilibrada entre modelos bagging e boosting, permitindo ao projeto comparar desempenho entre diferentes estratégias e selecionar o modelo mais adequado para cada dispositivo. Os hiperparâmetros apresentados mantêm o comportamento previsível do sistema, mas são passíveis de ajustes finos por meio da interface Streamlit. A documentação produzida neste texto complementa o relatório principal do mestrado eguarda os resultados reais obtidos nos experimentos finais.
+
+\end{document}
+
+
+
