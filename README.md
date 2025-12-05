@@ -12,8 +12,7 @@ Aplicação interativa em Streamlit para detecção de ataques de botnet em disp
 
 1. **Clone o repositório:**
 ```bash
-git clone <seu-repositorio>
-cd Mestrado
+git clone git@github.com:hanauer12/Detec-o-de-Botnets-IoT---Aplica-o-Streamlit.git
 ```
 
 2. **Crie e ative o ambiente virtual:**
@@ -34,16 +33,7 @@ pip install -r requirements.txt
 pip install --only-binary :all: -r requirements.txt
 ```
 
-4. **Configure o Kaggle:**
-   - Acesse https://www.kaggle.com/ → Account → API → Create New Token
-   - Coloque `kaggle.json` em `~/.kaggle/kaggle.json`
-   - Ou defina as variáveis de ambiente:
-   ```bash
-   export KAGGLE_USERNAME=seu_usuario
-   export KAGGLE_KEY=sua_chave_api
-   ```
-
-5. **Execute a aplicação:**
+4. **Execute a aplicação:**
 ```bash
 streamlit run app.py
 ```
@@ -80,6 +70,3 @@ Mestrado/
 - **Random Forest**: Ajuste de n_estimators, max_depth, min_samples_split, criterion
 - **XGBoost**: Ajuste de learning_rate, max_depth, subsample, colsample_bytree
 
-## 📝 Projeto
-
-Desenvolvido para disciplina de Aprendizado de Máquina - Mestrado
