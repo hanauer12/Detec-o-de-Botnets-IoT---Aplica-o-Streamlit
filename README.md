@@ -11,7 +11,7 @@ Aplicação interativa em Streamlit para detecção de ataques de botnet em disp
 
 1. **Clone o repositório:**
 ```bash
-git clone git@github.com:hanauer12/Detec-o-de-Botnets-IoT---Aplica-o-Streamlit.git
+git clone https://github.com/hanauer12/Detec-o-de-Botnets-IoT---Aplica-o-Streamlit.git
 ```
 
 2. **Crie e ative o ambiente virtual:**
